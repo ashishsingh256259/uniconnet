@@ -1354,55 +1354,7 @@ renderDM();
 renderResources();
 </script>
 </body>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyD5HD-Vk-08cKPa1itkmdJBGCMo3yzc36I",
-  authDomain: "uniconnect-5ea11.firebaseapp.com",
-  projectId: "uniconnect-5ea11",
-  storageBucket: "uniconnect-5ea11.firebasestorage.app",
-  messagingSenderId: "232692081308",
-  appId: "1:232692081308:web:9e080d5ed9bd7482ce8359",
-  measurementId: "G-G5494GW5DY"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-
-// make global (important for buttons)
-window.db = db;
-window.auth = auth;
-</script>
-<script type="module">
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-window.signup = async function () {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  try {
-    await createUserWithEmailAndPassword(window.auth, email, password);
-    alert("Signup successful");
-  } catch (err) {
-    alert(err.message);
-  }
-};
-
-window.login = async function () {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  try {
-    await signInWithEmailAndPassword(window.auth, email, password);
-    alert("Login successful");
-  } catch (err) {
-    alert(err.message);
-  }
-};
 </script>
 
 
