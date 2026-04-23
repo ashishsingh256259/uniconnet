@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UniConnect — Student–Teacher Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0e1a;
+    --surface: #131729;
+    --surface2: #1a1f35;
+    --surface3: #212640;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #e8eaf2;
+    --text2: #8b90a8;
+    --accent: #6c63ff;
+    --accent2: #a78bfa;
+    --teal: #22d3ee;
+    --green: #4ade80;
+    --amber: #fbbf24;
+    --red: #f87171;
+    --pink: #f472b6;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── LAYOUT ── */
+  .app { display:flex; height:100vh; overflow:hidden; }
+  .sidebar {
+    width: 260px; min-width:260px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction:column;
+    overflow-y: auto;
+    transition: transform 0.3s ease;
+  }
+  .main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+
+  /* ── SIDEBAR ── */
+  .logo {
+    padding: 24px 20px 16px;
+    display: flex; align-items:center; gap: 12px;
+  }
+  .logo-icon {
+    width:38px; height:38px; border-radius:10px;
+    background: linear-gradient(135deg, var(--accent), var(--teal));
+    display:grid; place-items:center; font-size:18px;
+  }
+  .logo-text { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; letter-spacing:-0.5px; }
+  .logo-text span { color: var(--accent2); }
+
+  .role-badge {
+    margin: 0 16px 20px;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    display:flex; align-items:center; gap:10px;
+    cursor:pointer; transition:all .2s;
+  }
+  .role-badge:hover { border-color: var(--accent); }
+  .role-dot { width:8px;height:8px;border-radius:50%; background:var(--green); }
+  .role-info { flex:1; }
+  .role-name { font-size:13px; font-weight:500; }
+  .role-label { font-size:11px; color:var(--text2); }
+  .role-toggle {
+    font-size:11px; color:var(--accent2); font-weight:500;
+    padding:3px 8px; background:rgba(108,99,255,0.1); border-radius:20px;
+    cursor:pointer;
+  }
+
+  .nav-section { padding:0 12px; margin-bottom:8px; }
+  .nav-label { font-size:10px; font-weight:600; letter-spacing:1.2px; text-transform:uppercase; color:var(--text2); padding:0 8px; margin-bottom:6px; }
+  .nav-item {
+    display:flex; align-items:center; gap:12px; padding:10px 12px;
+    border-radius:var(--radius-sm); cursor:pointer; color:var(--text2);
+    font-size:14px; font-weight:500; transition:all .2s; position:relative;
+    margin-bottom:2px;
+  }
+  .nav-item:hover { background:var(--surface2); color:var(--text); }
+  .nav-item.active { background:rgba(108,99,255,0.15); color:var(--accent2); }
+  .nav-item .icon { font-size:18px; width:22px; text-align:center; }
+  .nav-badge {
+    margin-left:auto; background:var(--accent); color:#fff;
+    font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px;
+  }
+  .nav-badge.green { background:var(--green); color:#000; }
+  .sidebar-footer {
+    margin-top:auto; padding:16px; border-top:1px solid var(--border);
+    display:flex; align-items:center; gap:10px;
+  }
+  .avatar {
+    width:34px; height:34px; border-radius:50%;
+    background: linear-gradient(135deg, var(--accent), var(--pink));
+    display:grid; place-items:center; font-size:14px; font-weight:700;
+    color:#fff; flex-shrink:0;
+  }
+  .user-info { flex:1; }
+  .user-name { font-size:13px; font-weight:500; }
+  .user-sub { font-size:11px; color:var(--text2); }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    padding: 16px 28px;
+    border-bottom: 1px solid var(--border);
+    display:flex; align-items:center; gap:16px;
+    background: var(--surface);
+  }
+  .topbar-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; flex:1; }
+  .search-bar {
+    display:flex; align-items:center; gap:8px;
+    background:var(--surface2); border:1px solid var(--border2);
+    border-radius:50px; padding:8px 16px;
+    transition:all .2s;
+  }
+  .search-bar:focus-within { border-color:var(--accent); }
+  .search-bar input {
+    background:none; border:none; outline:none; color:var(--text);
+    font-family:'DM Sans',sans-serif; font-size:14px; width:200px;
+  }
+  .search-bar input::placeholder { color:var(--text2); }
+  .icon-btn {
+    width:38px;height:38px; border-radius:50%;
+    background:var(--surface2); border:1px solid var(--border);
+    display:grid; place-items:center; cursor:pointer; font-size:16px;
+    transition:all .2s; color:var(--text2); position:relative;
+  }
+  .icon-btn:hover { border-color:var(--accent); color:var(--text); }
+  .notif-dot {
+    width:8px;height:8px;border-radius:50%; background:var(--accent);
+    position:absolute; top:4px; right:4px; border:2px solid var(--surface);
+  }
+
+  /* ── CONTENT ── */
+  .content { flex:1; overflow-y:auto; padding:28px; }
+  .page { display:none; animation: fadeUp 0.35s ease; }
+  .page.active { display:block; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
+
+  /* ── DASHBOARD ── */
+  .welcome-banner {
+    background: linear-gradient(135deg, rgba(108,99,255,0.2), rgba(34,211,238,0.1));
+    border: 1px solid rgba(108,99,255,0.3);
+    border-radius: var(--radius); padding: 24px 28px; margin-bottom:24px;
+    display:flex; align-items:center; justify-content:space-between;
+    position:relative; overflow:hidden;
+  }
+  .welcome-banner::before {
+    content:''; position:absolute; right:-40px; top:-40px;
+    width:180px; height:180px; border-radius:50%;
+    background: radial-gradient(circle, rgba(108,99,255,0.15), transparent 70%);
+  }
+  .welcome-text h2 { font-family:'Syne',sans-serif; font-size:22px; font-weight:700; margin-bottom:6px; }
+  .welcome-text p { color:var(--text2); font-size:14px; }
+  .welcome-emoji { font-size:48px; }
+
+  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
+  .stat-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:20px;
+    transition:all .25s; cursor:default;
+  }
+  .stat-card:hover { border-color:var(--border2); transform:translateY(-2px); }
+  .stat-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .stat-icon {
+    width:40px; height:40px; border-radius:10px;
+    display:grid; place-items:center; font-size:18px;
+  }
+  .stat-change { font-size:11px; font-weight:600; }
+  .stat-change.up { color:var(--green); }
+  .stat-change.dn { color:var(--red); }
+  .stat-num { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; }
+  .stat-label { font-size:12px; color:var(--text2); margin-top:2px; }
+
+  .grid-2 { display:grid; grid-template-columns:1.5fr 1fr; gap:20px; }
+  .card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:20px;
+  }
+  .card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+  .card-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; }
+  .card-action { font-size:12px; color:var(--accent2); cursor:pointer; }
+  .card-action:hover { text-decoration:underline; }
+
+  .activity-item {
+    display:flex; align-items:flex-start; gap:12px; padding:12px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .activity-item:last-child { border:none; padding-bottom:0; }
+  .activity-icon {
+    width:36px; height:36px; border-radius:10px;
+    display:grid; place-items:center; font-size:16px; flex-shrink:0;
+  }
+  .activity-text { flex:1; }
+  .activity-title { font-size:13px; font-weight:500; margin-bottom:3px; }
+  .activity-sub { font-size:12px; color:var(--text2); }
+  .activity-time { font-size:11px; color:var(--text2); }
+
+  .quick-links { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .quick-link {
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:var(--radius-sm); padding:14px; cursor:pointer;
+    transition:all .2s; text-align:center;
+  }
+  .quick-link:hover { border-color:var(--accent); transform:translateY(-2px); }
+  .quick-link .ql-icon { font-size:22px; margin-bottom:6px; }
+  .quick-link .ql-label { font-size:12px; font-weight:500; color:var(--text2); }
+
+  /* ── DOUBTS ── */
+  .doubts-header { display:flex; align-items:center; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
+  .btn {
+    display:inline-flex; align-items:center; gap:8px; padding:10px 18px;
+    border-radius:50px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600;
+    cursor:pointer; border:none; transition:all .2s;
+  }
+  .btn-primary { background:var(--accent); color:#fff; }
+  .btn-primary:hover { background:#5b52f0; transform:translateY(-1px); box-shadow:0 4px 16px rgba(108,99,255,0.4); }
+  .btn-ghost { background:var(--surface2); color:var(--text); border:1px solid var(--border2); }
+  .btn-ghost:hover { border-color:var(--accent); color:var(--accent2); }
+  .btn-sm { padding:6px 14px; font-size:12px; }
+
+  .filter-tabs { display:flex; gap:8px; flex-wrap:wrap; }
+  .filter-tab {
+    padding:6px 14px; border-radius:50px; font-size:12px; font-weight:500;
+    cursor:pointer; background:var(--surface2); color:var(--text2);
+    border:1px solid var(--border); transition:all .2s;
+  }
+  .filter-tab:hover, .filter-tab.active { background:rgba(108,99,255,0.15); color:var(--accent2); border-color:var(--accent); }
+
+  .doubt-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:20px; margin-bottom:14px;
+    transition:all .25s;
+  }
+  .doubt-card:hover { border-color:var(--border2); }
+  .doubt-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:10px; }
+  .doubt-question { font-size:15px; font-weight:500; line-height:1.5; flex:1; }
+  .tags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+  .tag {
+    padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600;
+    letter-spacing:.3px;
+  }
+  .tag-blue { background:rgba(34,211,238,0.12); color:var(--teal); }
+  .tag-purple { background:rgba(108,99,255,0.12); color:var(--accent2); }
+  .tag-green { background:rgba(74,222,128,0.12); color:var(--green); }
+  .tag-amber { background:rgba(251,191,36,0.12); color:var(--amber); }
+  .tag-anon { background:rgba(244,114,182,0.12); color:var(--pink); }
+  .doubt-meta { display:flex; align-items:center; gap:16px; font-size:12px; color:var(--text2); }
+  .vote-btn {
+    display:flex; align-items:center; gap:5px; cursor:pointer; transition:color .2s;
+  }
+  .vote-btn:hover { color:var(--accent2); }
+  .vote-btn.voted { color:var(--accent); }
+  .doubt-status {
+    font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px;
+  }
+  .status-answered { background:rgba(74,222,128,0.12); color:var(--green); }
+  .status-pending { background:rgba(251,191,36,0.1); color:var(--amber); }
+  .status-open { background:rgba(108,99,255,0.12); color:var(--accent2); }
+
+  .reply-box {
+    margin-top:14px; padding-top:14px; border-top:1px solid var(--border);
+    display:none;
+  }
+  .reply-box.show { display:block; }
+  .reply {
+    background:var(--surface2); border-radius:var(--radius-sm); padding:14px;
+    margin-bottom:10px;
+  }
+  .reply-header { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .reply-author { font-size:12px; font-weight:600; }
+  .reply-time { font-size:11px; color:var(--text2); }
+  .reply-text { font-size:13px; color:var(--text2); line-height:1.6; }
+  .reply-input-row { display:flex; gap:10px; margin-top:10px; }
+  .reply-input {
+    flex:1; background:var(--surface2); border:1px solid var(--border2);
+    border-radius:var(--radius-sm); padding:10px 14px; color:var(--text);
+    font-family:'DM Sans',sans-serif; font-size:13px; outline:none;
+    transition:border .2s; resize:none;
+  }
+  .reply-input:focus { border-color:var(--accent); }
+  .reply-input::placeholder { color:var(--text2); }
+
+  /* ── NOTICES ── */
+  .notice-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:20px; margin-bottom:14px;
+    display:flex; gap:16px; align-items:flex-start; transition:all .25s;
+  }
+  .notice-card:hover { border-color:var(--border2); }
+  .notice-card.pinned { border-color:rgba(251,191,36,0.3); background:rgba(251,191,36,0.04); }
+  .notice-icon-wrap {
+    width:46px; height:46px; border-radius:12px;
+    display:grid; place-items:center; font-size:20px; flex-shrink:0;
+  }
+  .notice-body { flex:1; }
+  .notice-title { font-size:15px; font-weight:600; margin-bottom:4px; display:flex; align-items:center; gap:8px; }
+  .pin-badge { font-size:10px; color:var(--amber); background:rgba(251,191,36,0.12); padding:2px 8px; border-radius:20px; font-weight:600; }
+  .notice-text { font-size:13px; color:var(--text2); line-height:1.6; margin-bottom:10px; }
+  .notice-footer { display:flex; align-items:center; gap:14px; font-size:12px; color:var(--text2); }
+  .read-btn {
+    margin-left:auto; font-size:11px; font-weight:600; padding:4px 12px;
+    border-radius:20px; cursor:pointer; background:var(--surface2);
+    border:1px solid var(--border2); color:var(--text2); transition:all .2s;
+  }
+  .read-btn:hover { border-color:var(--green); color:var(--green); }
+  .read-btn.done { background:rgba(74,222,128,0.1); color:var(--green); border-color:var(--green); }
+
+  /* ── POLLS ── */
+  .poll-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:22px; margin-bottom:14px;
+  }
+  .poll-question { font-size:16px; font-weight:600; margin-bottom:16px; }
+  .poll-option {
+    position:relative; background:var(--surface2); border:1px solid var(--border2);
+    border-radius:var(--radius-sm); padding:12px 16px; margin-bottom:8px;
+    cursor:pointer; overflow:hidden; transition:all .2s;
+  }
+  .poll-option:hover { border-color:var(--accent2); }
+  .poll-option.selected { border-color:var(--accent); }
+  .poll-fill {
+    position:absolute; left:0; top:0; bottom:0;
+    background:rgba(108,99,255,0.15); transition:width .6s ease; border-radius:inherit;
+  }
+  .poll-label { position:relative; z-index:1; font-size:13px; font-weight:500; display:flex; justify-content:space-between; }
+  .poll-pct { color:var(--accent2); font-weight:600; }
+  .poll-meta { font-size:12px; color:var(--text2); margin-top:10px; }
+
+  /* ── DM ── */
+  .dm-layout { display:flex; gap:16px; height:calc(100vh - 200px); }
+  .dm-sidebar {
+    width:280px; background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); overflow:hidden; display:flex; flex-direction:column;
+  }
+  .dm-search { padding:14px; border-bottom:1px solid var(--border); }
+  .dm-search input {
+    width:100%; background:var(--surface2); border:1px solid var(--border2);
+    border-radius:50px; padding:8px 14px; color:var(--text);
+    font-family:'DM Sans',sans-serif; font-size:13px; outline:none;
+  }
+  .dm-search input:focus { border-color:var(--accent); }
+  .dm-list { overflow-y:auto; flex:1; }
+  .dm-contact {
+    display:flex; align-items:center; gap:12px; padding:14px 16px;
+    cursor:pointer; border-bottom:1px solid var(--border); transition:all .2s;
+  }
+  .dm-contact:hover, .dm-contact.active { background:var(--surface2); }
+  .dm-avatar { width:38px;height:38px; border-radius:50%; display:grid; place-items:center; font-weight:700; flex-shrink:0; font-size:14px; }
+  .dm-contact-info { flex:1; min-width:0; }
+  .dm-contact-name { font-size:13px; font-weight:500; }
+  .dm-contact-preview { font-size:12px; color:var(--text2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .dm-time { font-size:11px; color:var(--text2); }
+
+  .dm-chat {
+    flex:1; background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); display:flex; flex-direction:column; overflow:hidden;
+  }
+  .dm-chat-header {
+    padding:16px 20px; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; gap:12px;
+  }
+  .dm-online { width:9px;height:9px;border-radius:50%; background:var(--green); }
+  .dm-messages { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:12px; }
+  .msg { max-width:70%; }
+  .msg.mine { align-self:flex-end; }
+  .msg-bubble {
+    padding:12px 16px; border-radius:16px; font-size:13px; line-height:1.6;
+  }
+  .msg.theirs .msg-bubble { background:var(--surface2); border-radius:4px 16px 16px 16px; }
+  .msg.mine .msg-bubble { background:var(--accent); border-radius:16px 4px 16px 16px; }
+  .msg-time { font-size:11px; color:var(--text2); margin-top:4px; padding:0 4px; }
+  .msg.mine .msg-time { text-align:right; }
+  .dm-input-row {
+    padding:16px; border-top:1px solid var(--border);
+    display:flex; align-items:center; gap:10px;
+  }
+  .dm-input {
+    flex:1; background:var(--surface2); border:1px solid var(--border2);
+    border-radius:50px; padding:10px 18px; color:var(--text);
+    font-family:'DM Sans',sans-serif; font-size:13px; outline:none; transition:border .2s;
+  }
+  .dm-input:focus { border-color:var(--accent); }
+
+  /* ── MODAL ── */
+  .modal-backdrop {
+    position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px);
+    display:none; place-items:center; z-index:100;
+  }
+  .modal-backdrop.open { display:grid; }
+  .modal {
+    background:var(--surface); border:1px solid var(--border2);
+    border-radius:20px; padding:28px; width:500px; max-width:95vw;
+    animation: fadeUp .3s ease;
+  }
+  .modal-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; margin-bottom:20px; }
+  .form-row { margin-bottom:16px; }
+  .form-label { font-size:12px; font-weight:600; color:var(--text2); margin-bottom:6px; display:block; text-transform:uppercase; letter-spacing:.5px; }
+  .form-input, .form-textarea, .form-select {
+    width:100%; background:var(--surface2); border:1px solid var(--border2);
+    border-radius:var(--radius-sm); padding:10px 14px; color:var(--text);
+    font-family:'DM Sans',sans-serif; font-size:14px; outline:none; transition:border .2s;
+  }
+  .form-input:focus, .form-textarea:focus, .form-select:focus { border-color:var(--accent); }
+  .form-textarea { resize:vertical; min-height:100px; }
+  .form-select option { background:var(--surface2); }
+  .checkbox-row { display:flex; align-items:center; gap:10px; cursor:pointer; }
+  .checkbox-row input { cursor:pointer; accent-color:var(--accent); width:16px; height:16px; }
+  .checkbox-label { font-size:13px; }
+  .modal-actions { display:flex; gap:10px; margin-top:20px; justify-content:flex-end; }
+
+  /* ── AI PANEL ── */
+  .ai-panel {
+    position:fixed; right:0; top:0; bottom:0; width:360px;
+    background:var(--surface); border-left:1px solid var(--border);
+    transform:translateX(100%); transition:transform .35s ease;
+    display:flex; flex-direction:column; z-index:50;
+  }
+  .ai-panel.open { transform:none; }
+  .ai-header {
+    padding:20px; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .ai-title { display:flex; align-items:center; gap:10px; }
+  .ai-dot { width:10px;height:10px;border-radius:50%; background:var(--teal); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .ai-name { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; }
+  .ai-name span { color:var(--teal); }
+  .ai-close { cursor:pointer; color:var(--text2); font-size:20px; }
+  .ai-close:hover { color:var(--text); }
+  .ai-messages { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; }
+  .ai-msg { }
+  .ai-msg.user { align-self:flex-end; max-width:85%; }
+  .ai-msg.bot { align-self:flex-start; max-width:90%; }
+  .ai-bubble {
+    padding:12px 16px; border-radius:14px; font-size:13px; line-height:1.7;
+  }
+  .ai-msg.user .ai-bubble { background:var(--accent); border-radius:14px 4px 14px 14px; }
+  .ai-msg.bot .ai-bubble { background:var(--surface2); border:1px solid var(--border2); border-radius:4px 14px 14px 14px; }
+  .ai-input-row {
+    padding:14px; border-top:1px solid var(--border);
+    display:flex; gap:10px;
+  }
+  .ai-input {
+    flex:1; background:var(--surface2); border:1px solid var(--border2);
+    border-radius:50px; padding:10px 16px; color:var(--text);
+    font-family:'DM Sans',sans-serif; font-size:13px; outline:none; transition:border .2s;
+  }
+  .ai-input:focus { border-color:var(--teal); }
+  .ai-send {
+    width:38px; height:38px; border-radius:50%; background:var(--teal);
+    border:none; cursor:pointer; display:grid; place-items:center;
+    font-size:16px; color:#000; transition:all .2s; flex-shrink:0;
+  }
+  .ai-send:hover { transform:scale(1.1); }
+  .ai-typing { display:flex; gap:4px; align-items:center; padding:8px 0; }
+  .ai-typing span { width:6px;height:6px;border-radius:50%; background:var(--text2); animation:bounce .8s infinite; }
+  .ai-typing span:nth-child(2) { animation-delay:.15s; }
+  .ai-typing span:nth-child(3) { animation-delay:.3s; }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+
+  .ai-fab {
+    position:fixed; bottom:28px; right:28px;
+    width:54px; height:54px; border-radius:50%;
+    background: linear-gradient(135deg, var(--teal), var(--accent));
+    border:none; cursor:pointer; display:grid; place-items:center;
+    font-size:22px; box-shadow:0 6px 24px rgba(34,211,238,0.4);
+    transition:all .2s; z-index:40;
+  }
+  .ai-fab:hover { transform:scale(1.1); }
+
+  /* ── RESOURCES ── */
+  .resources-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .resource-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:18px; cursor:pointer; transition:all .25s;
+  }
+  .resource-card:hover { border-color:var(--accent2); transform:translateY(-3px); box-shadow:var(--shadow); }
+  .resource-icon { font-size:28px; margin-bottom:12px; }
+  .resource-name { font-size:14px; font-weight:600; margin-bottom:4px; }
+  .resource-meta { font-size:12px; color:var(--text2); }
+  .resource-tag { font-size:10px; margin-top:10px; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width:5px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:var(--surface3); border-radius:10px; }
+
+  /* ── LOADING ── */
+  .loading {
+    display:inline-flex; gap:3px; align-items:center;
+  }
+  .loading span {
+    width:5px; height:5px; border-radius:50%; background:var(--teal);
+    animation:bounce .7s infinite;
+  }
+  .loading span:nth-child(2) { animation-delay:.12s; }
+  .loading span:nth-child(3) { animation-delay:.24s; }
+
+  .empty-state { text-align:center; padding:48px 20px; color:var(--text2); }
+  .empty-icon { font-size:40px; margin-bottom:12px; }
+  .empty-msg { font-size:14px; }
+
+  /* Responsive */
+  @media (max-width:900px) {
+    .stats-grid { grid-template-columns:repeat(2,1fr); }
+    .grid-2 { grid-template-columns:1fr; }
+    .resources-grid { grid-template-columns:repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">📡</div>
+      <div class="logo-text">Uni<span>Connect</span></div>
+    </div>
+
+    <div class="role-badge" onclick="toggleRole()">
+      <div class="role-dot" id="roleDot"></div>
+      <div class="role-info">
+        <div class="role-name" id="roleName">Ashish Kumar</div>
+        <div class="role-label" id="roleLabel">Student · Section A</div>
+      </div>
+      <div class="role-toggle" id="roleToggle">Student</div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Main</div>
+      <div class="nav-item active" onclick="goto('dashboard',this)">
+        <span class="icon">🏠</span> Dashboard
+      </div>
+      <div class="nav-item" onclick="goto('doubts',this)">
+        <span class="icon">❓</span> Doubts
+        <span class="nav-badge" id="doubtBadge">3</span>
+      </div>
+      <div class="nav-item" onclick="goto('notices',this)">
+        <span class="icon">📋</span> Notice Board
+        <span class="nav-badge green">2</span>
+      </div>
+      <div class="nav-item" onclick="goto('polls',this)">
+        <span class="icon">📊</span> Live Polls
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Communicate</div>
+      <div class="nav-item" onclick="goto('dm',this)">
+        <span class="icon">💬</span> Messages
+        <span class="nav-badge">1</span>
+      </div>
+      <div class="nav-item" onclick="goto('resources',this)">
+        <span class="icon">📁</span> Resources
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="avatar" id="sidebarAvatar">AK</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebarName">Ashish Kumar</div>
+        <div class="user-sub" id="sidebarSub">Roll: 0251CSML203</div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-title" id="topbarTitle">Dashboard</div>
+      <div class="search-bar">
+        <span>🔍</span>
+        <input type="text" placeholder="Search doubts, notices…" id="globalSearch" oninput="handleSearch()">
+      </div>
+      <div class="icon-btn" onclick="openAI()" title="AI Assistant">
+        🤖<div class="notif-dot"></div>
+      </div>
+      <div class="icon-btn" title="Notifications">🔔</div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- ─── DASHBOARD ─── -->
+      <div class="page active" id="page-dashboard">
+        <div class="welcome-banner">
+          <div class="welcome-text">
+            <h2 id="welcomeMsg">Good Morning, Ashish! 👋</h2>
+            <p>Here's what's happening in your academic world today.</p>
+          </div>
+          <div class="welcome-emoji">🎓</div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-icon" style="background:rgba(108,99,255,0.15)">❓</div>
+              <div class="stat-change up">+2 today</div>
+            </div>
+            <div class="stat-num" id="statDoubts">12</div>
+            <div class="stat-label">Doubts Asked</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-icon" style="background:rgba(74,222,128,0.15)">✅</div>
+              <div class="stat-change up">↑ 83%</div>
+            </div>
+            <div class="stat-num">10</div>
+            <div class="stat-label">Resolved</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-icon" style="background:rgba(251,191,36,0.15)">📢</div>
+              <div class="stat-change dn">2 unread</div>
+            </div>
+            <div class="stat-num">5</div>
+            <div class="stat-label">New Notices</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-icon" style="background:rgba(34,211,238,0.15)">📊</div>
+              <div class="stat-change up">Active</div>
+            </div>
+            <div class="stat-num">1</div>
+            <div class="stat-label">Live Poll</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Recent Activity</div>
+              <div class="card-action" onclick="goto('doubts', document.querySelector('[onclick*=doubts]'))">View all →</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon" style="background:rgba(74,222,128,0.12)">✅</div>
+              <div class="activity-text">
+                <div class="activity-title">Dr. Sharma answered your doubt</div>
+                <div class="activity-sub">"What is polymorphism?" — OOP Subject</div>
+              </div>
+              <div class="activity-time">2m ago</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon" style="background:rgba(251,191,36,0.12)">📢</div>
+              <div class="activity-text">
+                <div class="activity-title">New notice: Exam Schedule</div>
+                <div class="activity-sub">Mid-term exams starting from 28 April</div>
+              </div>
+              <div class="activity-time">1h ago</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon" style="background:rgba(108,99,255,0.12)">📊</div>
+              <div class="activity-text">
+                <div class="activity-title">Live Poll started in Data Structures</div>
+                <div class="activity-sub">Prof. Mehta wants your feedback on lecture pace</div>
+              </div>
+              <div class="activity-time">3h ago</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon" style="background:rgba(244,114,182,0.12)">🎭</div>
+              <div class="activity-text">
+                <div class="activity-title">Anonymous doubt got 14 upvotes</div>
+                <div class="activity-sub">"Explain difference between stack and heap"</div>
+              </div>
+              <div class="activity-time">5h ago</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Quick Actions</div>
+            </div>
+            <div class="quick-links">
+              <div class="quick-link" onclick="openNewDoubt()">
+                <div class="ql-icon">❓</div>
+                <div class="ql-label">Ask Doubt</div>
+              </div>
+              <div class="quick-link" onclick="goto('notices', document.querySelector('[onclick*=notices]'))">
+                <div class="ql-icon">📋</div>
+                <div class="ql-label">Notices</div>
+              </div>
+              <div class="quick-link" onclick="goto('dm', document.querySelector('[onclick*=dm]'))">
+                <div class="ql-icon">💬</div>
+                <div class="ql-label">Message</div>
+              </div>
+              <div class="quick-link" onclick="goto('polls', document.querySelector('[onclick*=polls]'))">
+                <div class="ql-icon">📊</div>
+                <div class="ql-label">Vote Poll</div>
+              </div>
+              <div class="quick-link" onclick="goto('resources', document.querySelector('[onclick*=resources]'))">
+                <div class="ql-icon">📁</div>
+                <div class="ql-label">Resources</div>
+              </div>
+              <div class="quick-link" onclick="openAI()">
+                <div class="ql-icon">🤖</div>
+                <div class="ql-label">AI Help</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── DOUBTS ─── -->
+      <div class="page" id="page-doubts">
+        <div class="doubts-header">
+          <button class="btn btn-primary" onclick="openNewDoubt()">＋ Post Doubt</button>
+          <div class="filter-tabs">
+            <div class="filter-tab active" onclick="filterDoubts('all',this)">All</div>
+            <div class="filter-tab" onclick="filterDoubts('open',this)">Open</div>
+            <div class="filter-tab" onclick="filterDoubts('answered',this)">Answered</div>
+            <div class="filter-tab" onclick="filterDoubts('mine',this)">My Doubts</div>
+            <div class="filter-tab" onclick="filterDoubts('anonymous',this)">Anonymous</div>
+          </div>
+        </div>
+
+        <div id="doubtsList"></div>
+      </div>
+
+      <!-- ─── NOTICES ─── -->
+      <div class="page" id="page-notices">
+        <div class="doubts-header">
+          <div style="flex:1">
+            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;">Notice Board 📋</div>
+            <div style="font-size:13px;color:var(--text2);margin-top:4px;">All important announcements in one place</div>
+          </div>
+          <button class="btn btn-primary" id="postNoticeBtn" style="display:none" onclick="openNoticeModal()">＋ Post Notice</button>
+        </div>
+        <div id="noticesList"></div>
+      </div>
+
+      <!-- ─── POLLS ─── -->
+      <div class="page" id="page-polls">
+        <div class="doubts-header" style="margin-bottom:20px">
+          <div style="flex:1">
+            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;">Live Polls 📊</div>
+            <div style="font-size:13px;color:var(--text2);margin-top:4px;">Real-time feedback between students & teachers</div>
+          </div>
+          <button class="btn btn-primary" id="createPollBtn" style="display:none" onclick="openPollModal()">＋ Create Poll</button>
+        </div>
+        <div id="pollsList"></div>
+      </div>
+
+      <!-- ─── DM ─── -->
+      <div class="page" id="page-dm">
+        <div class="dm-layout">
+          <div class="dm-sidebar">
+            <div class="dm-search">
+              <input placeholder="Search conversations…" oninput="filterContacts(this.value)">
+            </div>
+            <div class="dm-list" id="dmContacts"></div>
+          </div>
+          <div class="dm-chat">
+            <div class="dm-chat-header" id="dmChatHeader">
+              <div class="dm-avatar" style="background:linear-gradient(135deg,#6c63ff,#a78bfa)">DS</div>
+              <div>
+                <div style="font-size:14px;font-weight:600">Dr. Sharma</div>
+                <div style="font-size:12px;color:var(--text2);display:flex;align-items:center;gap:5px"><div class="dm-online"></div> Online</div>
+              </div>
+            </div>
+            <div class="dm-messages" id="dmMessages"></div>
+            <div class="dm-input-row">
+              <input class="dm-input" placeholder="Type a message…" id="dmInput" onkeydown="if(event.key==='Enter')sendDM()">
+              <button class="btn btn-primary btn-sm" onclick="sendDM()">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── RESOURCES ─── -->
+      <div class="page" id="page-resources">
+        <div class="doubts-header" style="margin-bottom:20px">
+          <div style="flex:1">
+            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;">Resource Library 📁</div>
+            <div style="font-size:13px;color:var(--text2);margin-top:4px;">Notes, assignments, and past Q&As — all searchable</div>
+          </div>
+        </div>
+        <div class="resources-grid" id="resourcesGrid"></div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ─── MODAL: New Doubt ─── -->
+<div class="modal-backdrop" id="modalDoubt">
+  <div class="modal">
+    <div class="modal-title">❓ Post a Doubt</div>
+    <div class="form-row">
+      <label class="form-label">Your Question</label>
+      <textarea class="form-textarea" id="doubtQuestion" placeholder="Describe your doubt clearly…"></textarea>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Subject</label>
+      <select class="form-select" id="doubtSubject">
+        <option>Object Oriented Programming</option>
+        <option>Data Structures & Algorithms</option>
+        <option>Mathematics II</option>
+        <option>Design Thinking</option>
+        <option>AI & Machine Learning</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label class="checkbox-row">
+        <input type="checkbox" id="doubtAnon">
+        <span class="checkbox-label">🎭 Post Anonymously (your name won't be shown)</span>
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modalDoubt')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitDoubt()">Post Doubt</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: Notice ─── -->
+<div class="modal-backdrop" id="modalNotice">
+  <div class="modal">
+    <div class="modal-title">📢 Post a Notice</div>
+    <div class="form-row">
+      <label class="form-label">Title</label>
+      <input class="form-input" id="noticeTitle" placeholder="Notice heading…">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Message</label>
+      <textarea class="form-textarea" id="noticeText" placeholder="Detailed notice content…"></textarea>
+    </div>
+    <div class="form-row">
+      <label class="checkbox-row">
+        <input type="checkbox" id="noticePinned">
+        <span class="checkbox-label">📌 Pin this notice</span>
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modalNotice')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitNotice()">Post Notice</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: Poll ─── -->
+<div class="modal-backdrop" id="modalPoll">
+  <div class="modal">
+    <div class="modal-title">📊 Create a Poll</div>
+    <div class="form-row">
+      <label class="form-label">Question</label>
+      <input class="form-input" id="pollQuestion" placeholder="What would you like to ask?">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Options (comma separated)</label>
+      <input class="form-input" id="pollOptions" placeholder="Option A, Option B, Option C">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modalPoll')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitPoll()">Create Poll</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── AI ASSISTANT PANEL ─── -->
+<div class="ai-panel" id="aiPanel">
+  <div class="ai-header">
+    <div class="ai-title">
+      <div class="ai-dot"></div>
+      <div class="ai-name">Uni<span>AI</span></div>
+    </div>
+    <div class="ai-close" onclick="closeAI()">✕</div>
+  </div>
+  <div class="ai-messages" id="aiMessages">
+    <div class="ai-msg bot">
+      <div class="ai-bubble">Hi! I'm UniAI, your academic assistant 🎓 I can help you understand concepts, summarize notices, find past doubts, or answer any academic question. What would you like help with?</div>
+    </div>
+  </div>
+  <div class="ai-input-row">
+    <input class="ai-input" placeholder="Ask me anything…" id="aiInput" onkeydown="if(event.key==='Enter')sendAI()">
+    <button class="ai-send" onclick="sendAI()">➤</button>
+  </div>
+</div>
+<button class="ai-fab" onclick="openAI()" title="AI Assistant">🤖</button>
+
+<script>
+// ═══════════════════════════════════
+// STATE
+// ═══════════════════════════════════
+let isTeacher = false;
+let currentPage = 'dashboard';
+
+const doubts = [
+  { id:1, q:"What is the difference between overloading and overriding in OOP?", subject:"Object Oriented Programming", anon:false, author:"Rahul S.", votes:14, status:"answered", mine:false, replies:[{author:"Dr. Sharma",time:"10m ago",text:"Method overloading means same name, different parameters in the same class. Overriding means redefining a parent class method in a child class. Overloading is compile-time polymorphism; overriding is runtime polymorphism."}] },
+  { id:2, q:"Can someone explain the exam pattern for mid-terms?", subject:"General", anon:true, author:"Anonymous", votes:9, status:"pending", mine:false, replies:[] },
+  { id:3, q:"How does a binary search tree differ from a heap?", subject:"Data Structures & Algorithms", anon:false, author:"Priya T.", votes:7, status:"answered", mine:false, replies:[{author:"Prof. Mehta",time:"2h ago",text:"BST maintains sorted ordering — left < root < right. A heap only guarantees parent-child ordering (max or min). BST search is O(log n), heap search is O(n) but heap extraction is O(log n)."}] },
+  { id:4, q:"What is the gradient descent algorithm and how does it work in neural networks?", subject:"AI & Machine Learning", anon:false, author:"Ashish Kumar", votes:3, status:"open", mine:true, replies:[] },
+  { id:5, q:"How to calculate time complexity for nested loops?", subject:"Data Structures & Algorithms", anon:true, author:"Anonymous", votes:18, status:"answered", mine:false, replies:[{author:"Prof. Mehta",time:"1h ago",text:"For nested loops, multiply the complexities. If outer is O(n) and inner is O(n), total is O(n²). For each additional level of nesting, multiply by another n."}] },
+];
+
+const notices = [
+  { id:1, title:"Mid-Term Examination Schedule", text:"Mid-term exams will commence from 28th April 2026. OOP on 28th, DSA on 30th, Maths on 2nd May. Syllabus: Units 1-3. Exam hall allocations will be posted 2 days prior.", icon:"📌", pinned:true, author:"Dr. Sharma", time:"2h ago", category:"Exam" },
+  { id:2, title:"Holiday: Dr. Ambedkar Jayanti", text:"The college will remain closed on 14th April on account of Dr. B.R. Ambedkar Jayanti. All pending classes will be compensated next week.", icon:"🎉", pinned:false, author:"Principal Office", time:"Yesterday", category:"Holiday" },
+  { id:3, title:"Guest Lecture — AI & Ethics", text:"A guest lecture by Mr. Arvind Rao (Ex-Google) on AI Ethics and Responsible AI Development. Date: 22nd April, 2:00 PM, LT-3. Attendance is mandatory.", icon:"🎤", pinned:false, author:"HoD AI/ML", time:"2 days ago", category:"Event" },
+  { id:4, title:"OOP Assignment 2 — Deadline Extended", text:"Due to student requests and upcoming exams, Assignment 2 deadline has been extended to 5th May. Submit via Google Classroom. Late submissions will be penalised.", icon:"📝", pinned:false, author:"Dr. Sharma", time:"3 days ago", category:"Assignment" },
+];
+
+const polls = [
+  { id:1, q:"How well did you understand today's lecture on Dynamic Programming?", options:["Completely Clear","Mostly Clear","Somewhat Confused","Very Confused"], votes:[12,8,5,2], active:true, subject:"Data Structures", author:"Prof. Mehta", myVote:null },
+  { id:2, q:"What time slot works best for extra doubt-clearing sessions?", options:["Morning 8–9 AM","Lunch 1–2 PM","Evening 5–6 PM","Weekend Morning"], votes:[6,14,9,4], active:true, subject:"General", author:"HOD", myVote:null },
+  { id:3, q:"Rate the overall quality of last week's OOP lectures", options:["Excellent","Good","Average","Needs Improvement"], votes:[10,15,4,1], active:false, subject:"OOP", author:"Dr. Sharma", myVote:2 },
+];
+
+const contacts = [
+  { id:1, name:"Dr. Sharma", role:"OOP Faculty", initials:"DS", color:"linear-gradient(135deg,#6c63ff,#a78bfa)", online:true, msgs:[{mine:false,text:"Hello Ashish! Your last assignment was well done. 🎉",time:"10:30 AM"},{mine:true,text:"Thank you, Sir! I had a doubt about polymorphism.",time:"10:32 AM"},{mine:false,text:"Method overloading is compile-time, overriding is runtime. Check my reply in the doubts section too!",time:"10:35 AM"}] },
+  { id:2, name:"Prof. Mehta", role:"DSA Faculty", initials:"PM", color:"linear-gradient(135deg,#22d3ee,#6c63ff)", online:false, msgs:[{mine:false,text:"Please solve the practice problems before the next class.",time:"Yesterday"},{mine:true,text:"Sure sir, will complete by tonight.",time:"Yesterday"}] },
+  { id:3, name:"Rahul Sharma", role:"Classmate · Roll 204", initials:"RS", color:"linear-gradient(135deg,#4ade80,#22d3ee)", online:true, msgs:[{mine:false,text:"Bhai notes share kar de Design Thinking ke",time:"2h ago"},{mine:true,text:"Bhej raha hoon abhi 📁",time:"2h ago"}] },
+];
+
+const resources = [
+  { name:"OOP Lecture Notes — Unit 1", type:"PDF", size:"2.4 MB", subject:"OOP", icon:"📄", tag:"tag-blue" },
+  { name:"DSA Assignment 1 — Solution", type:"PDF", size:"1.1 MB", subject:"DSA", icon:"📝", tag:"tag-purple" },
+  { name:"Design Thinking Project Guide", type:"PPTX", size:"3.8 MB", subject:"Design Thinking", icon:"📊", tag:"tag-green" },
+  { name:"Mathematics II — Formula Sheet", type:"PDF", size:"0.8 MB", subject:"Maths", icon:"📐", tag:"tag-amber" },
+  { name:"AI/ML — Introduction Slides", type:"PPTX", size:"5.2 MB", subject:"AI/ML", icon:"🤖", tag:"tag-blue" },
+  { name:"Doubts FAQ Archive — Sem II", type:"Archive", size:"0.4 MB", subject:"All", icon:"🗂️", tag:"tag-purple" },
+];
+
+let activeContact = 0;
+let doubtFilter = 'all';
+
+// ═══════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════
+function goto(page, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (el) el.classList.add('active');
+  currentPage = page;
+  const titles = {dashboard:'Dashboard',doubts:'Doubts & Questions',notices:'Notice Board',polls:'Live Polls',dm:'Direct Messages',resources:'Resource Library'};
+  document.getElementById('topbarTitle').textContent = titles[page] || page;
+  if (page === 'doubts') renderDoubts();
+  if (page === 'notices') renderNotices();
+  if (page === 'polls') renderPolls();
+  if (page === 'dm') renderDM();
+  if (page === 'resources') renderResources();
+}
+
+// ═══════════════════════════════════
+// ROLE TOGGLE
+// ═══════════════════════════════════
+function toggleRole() {
+  isTeacher = !isTeacher;
+  document.getElementById('roleName').textContent = isTeacher ? 'Dr. Sharma' : 'Ashish Kumar';
+  document.getElementById('roleLabel').textContent = isTeacher ? 'Faculty · OOP / AI-ML' : 'Student · Section A';
+  document.getElementById('roleToggle').textContent = isTeacher ? 'Faculty' : 'Student';
+  document.getElementById('roleDot').style.background = isTeacher ? 'var(--teal)' : 'var(--green)';
+  document.getElementById('sidebarAvatar').textContent = isTeacher ? 'DS' : 'AK';
+  document.getElementById('sidebarName').textContent = isTeacher ? 'Dr. Sharma' : 'Ashish Kumar';
+  document.getElementById('sidebarSub').textContent = isTeacher ? 'OOP · AI-ML Faculty' : 'Roll: 0251CSML203';
+  const greeting = isTeacher ? 'Good Morning, Dr. Sharma! 👋' : 'Good Morning, Ashish! 👋';
+  document.getElementById('welcomeMsg').textContent = greeting;
+  document.getElementById('postNoticeBtn').style.display = isTeacher ? '' : 'none';
+  document.getElementById('createPollBtn').style.display = isTeacher ? '' : 'none';
+  if (currentPage === 'doubts') renderDoubts();
+  if (currentPage === 'notices') renderNotices();
+  if (currentPage === 'polls') renderPolls();
+}
+
+// ═══════════════════════════════════
+// DOUBTS
+// ═══════════════════════════════════
+function renderDoubts(filter) {
+  if (filter) doubtFilter = filter;
+  let list = doubts;
+  if (doubtFilter === 'open') list = doubts.filter(d => d.status === 'open');
+  else if (doubtFilter === 'answered') list = doubts.filter(d => d.status === 'answered');
+  else if (doubtFilter === 'mine') list = doubts.filter(d => d.mine);
+  else if (doubtFilter === 'anonymous') list = doubts.filter(d => d.anon);
+  const el = document.getElementById('doubtsList');
+  if (!list.length) { el.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-msg">No doubts found for this filter.</div></div>`; return; }
+  el.innerHTML = list.map(d => `
+    <div class="doubt-card" id="doubt-${d.id}">
+      <div class="doubt-top">
+        <div class="doubt-question">${d.q}</div>
+        <div class="doubt-status status-${d.status}">${d.status === 'answered' ? '✅ Answered' : d.status === 'pending' ? '⏳ Pending' : '💬 Open'}</div>
+      </div>
+      <div class="tags">
+        <div class="tag tag-blue">${d.subject}</div>
+        ${d.anon ? '<div class="tag tag-anon">🎭 Anonymous</div>' : `<div class="tag tag-purple">👤 ${d.author}</div>`}
+        ${d.mine ? '<div class="tag tag-green">✦ My Doubt</div>' : ''}
+      </div>
+      <div class="doubt-meta">
+        <div class="vote-btn ${d.voted?'voted':''}" onclick="vote(${d.id})">▲ ${d.votes} upvotes</div>
+        <span>·</span>
+        <span>${d.replies.length} replies</span>
+        <span>·</span>
+        <span style="cursor:pointer;color:var(--accent2)" onclick="toggleReply(${d.id})">💬 ${isTeacher && d.status!=='answered' ? 'Answer this' : 'View replies'}</span>
+        ${isTeacher && d.status!=='answered' ? `<span style="cursor:pointer;color:var(--green);margin-left:auto" onclick="markAnswered(${d.id})">✅ Mark Answered</span>` : ''}
+      </div>
+      <div class="reply-box ${d.replies.length?'show':''}" id="replyBox-${d.id}">
+        ${d.replies.map(r => `
+          <div class="reply">
+            <div class="reply-header">
+              <span class="reply-author">👨‍🏫 ${r.author}</span>
+              <span class="reply-time">${r.time}</span>
+            </div>
+            <div class="reply-text">${r.text}</div>
+          </div>
+        `).join('')}
+        <div class="reply-input-row">
+          <textarea class="reply-input" id="replyInput-${d.id}" placeholder="${isTeacher ? 'Write your answer…' : 'Add a comment…'}" rows="2"></textarea>
+          <button class="btn btn-primary btn-sm" onclick="submitReply(${d.id})" style="align-self:flex-end">Send</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterDoubts(f, el) {
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderDoubts(f);
+}
+
+function vote(id) {
+  const d = doubts.find(x => x.id === id);
+  if (!d) return;
+  d.voted = !d.voted;
+  d.votes += d.voted ? 1 : -1;
+  renderDoubts();
+}
+
+function toggleReply(id) {
+  const box = document.getElementById('replyBox-' + id);
+  box.classList.toggle('show');
+}
+
+function submitReply(id) {
+  const input = document.getElementById('replyInput-' + id);
+  const text = input.value.trim();
+  if (!text) return;
+  const d = doubts.find(x => x.id === id);
+  d.replies.push({ author: isTeacher ? 'Dr. Sharma' : 'Ashish Kumar', time: 'Just now', text });
+  if (isTeacher) d.status = 'answered';
+  input.value = '';
+  renderDoubts();
+}
+
+function markAnswered(id) {
+  doubts.find(x => x.id === id).status = 'answered';
+  renderDoubts();
+}
+
+function openNewDoubt() {
+  goto('doubts', document.querySelector('[onclick*="doubts"]'));
+  document.getElementById('modalDoubt').classList.add('open');
+}
+
+function submitDoubt() {
+  const q = document.getElementById('doubtQuestion').value.trim();
+  const sub = document.getElementById('doubtSubject').value;
+  const anon = document.getElementById('doubtAnon').checked;
+  if (!q) return;
+  doubts.unshift({ id: Date.now(), q, subject: sub, anon, author: anon ? 'Anonymous' : 'Ashish Kumar', votes: 0, status: 'open', mine: true, replies: [] });
+  document.getElementById('doubtQuestion').value = '';
+  document.getElementById('doubtAnon').checked = false;
+  document.getElementById('statDoubts').textContent = parseInt(document.getElementById('statDoubts').textContent) + 1;
+  closeModal('modalDoubt');
+  renderDoubts();
+}
+
+// ═══════════════════════════════════
+// NOTICES
+// ═══════════════════════════════════
+function renderNotices() {
+  document.getElementById('postNoticeBtn').style.display = isTeacher ? '' : 'none';
+  const el = document.getElementById('noticesList');
+  const sorted = [...notices].sort((a,b) => b.pinned - a.pinned);
+  el.innerHTML = sorted.map(n => `
+    <div class="notice-card ${n.pinned?'pinned':''}">
+      <div class="notice-icon-wrap" style="background:rgba(251,191,36,0.1)">${n.icon}</div>
+      <div class="notice-body">
+        <div class="notice-title">${n.title} ${n.pinned?'<span class="pin-badge">📌 PINNED</span>':''} <span class="tag tag-amber" style="font-size:10px">${n.category}</span></div>
+        <div class="notice-text">${n.text}</div>
+        <div class="notice-footer">
+          <span>📣 ${n.author}</span>
+          <span>🕐 ${n.time}</span>
+          <button class="read-btn ${n.read?'done':''}" onclick="markRead(${n.id})">${n.read?'✓ Read':'Mark as Read'}</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function markRead(id) {
+  notices.find(x => x.id === id).read = true;
+  renderNotices();
+}
+
+function openNoticeModal() { document.getElementById('modalNotice').classList.add('open'); }
+function submitNotice() {
+  const title = document.getElementById('noticeTitle').value.trim();
+  const text = document.getElementById('noticeText').value.trim();
+  const pinned = document.getElementById('noticePinned').checked;
+  if (!title || !text) return;
+  notices.unshift({ id: Date.now(), title, text, icon: '📢', pinned, author: 'Dr. Sharma', time: 'Just now', category: 'General' });
+  document.getElementById('noticeTitle').value = '';
+  document.getElementById('noticeText').value = '';
+  document.getElementById('noticePinned').checked = false;
+  closeModal('modalNotice');
+  renderNotices();
+}
+
+// ═══════════════════════════════════
+// POLLS
+// ═══════════════════════════════════
+function renderPolls() {
+  document.getElementById('createPollBtn').style.display = isTeacher ? '' : 'none';
+  const el = document.getElementById('pollsList');
+  el.innerHTML = polls.map(p => {
+    const total = p.votes.reduce((a,b) => a+b, 0);
+    const voted = p.myVote !== null;
+    return `
+      <div class="poll-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div class="tag tag-blue">${p.subject}</div>
+          <div class="tag ${p.active?'tag-green':'tag-amber'}">${p.active?'🟢 Live':'🔴 Closed'}</div>
+        </div>
+        <div class="poll-question">${p.q}</div>
+        ${p.options.map((opt,i) => {
+          const pct = total ? Math.round(p.votes[i]/total*100) : 0;
+          return `<div class="poll-option ${p.myVote===i?'selected':''}" onclick="${!voted&&p.active?`votePoll(${p.id},${i})`:''}" style="${!p.active||voted?'cursor:default':''}">
+            <div class="poll-fill" style="width:${voted||!p.active?pct:0}%"></div>
+            <div class="poll-label"><span>${opt}</span>${voted||!p.active?`<span class="poll-pct">${pct}%</span>`:''}  </div>
+          </div>`;
+        }).join('')}
+        <div class="poll-meta">👤 ${p.author} · ${total} total votes${voted?' · You voted ✓':p.active?' · Tap to vote':''}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function votePoll(pollId, optIdx) {
+  const p = polls.find(x => x.id === pollId);
+  if (!p || p.myVote !== null) return;
+  p.myVote = optIdx;
+  p.votes[optIdx]++;
+  renderPolls();
+}
+
+function openPollModal() { document.getElementById('modalPoll').classList.add('open'); }
+function submitPoll() {
+  const q = document.getElementById('pollQuestion').value.trim();
+  const opts = document.getElementById('pollOptions').value.split(',').map(x => x.trim()).filter(Boolean);
+  if (!q || opts.length < 2) return;
+  polls.unshift({ id: Date.now(), q, options: opts, votes: opts.map(() => 0), active: true, subject: 'General', author: 'Dr. Sharma', myVote: null });
+  document.getElementById('pollQuestion').value = '';
+  document.getElementById('pollOptions').value = '';
+  closeModal('modalPoll');
+  renderPolls();
+}
+
+// ═══════════════════════════════════
+// DM
+// ═══════════════════════════════════
+function renderDM() {
+  const el = document.getElementById('dmContacts');
+  el.innerHTML = contacts.map((c,i) => `
+    <div class="dm-contact ${activeContact===i?'active':''}" onclick="selectContact(${i})">
+      <div class="dm-avatar" style="background:${c.color}">${c.initials}</div>
+      <div class="dm-contact-info">
+        <div class="dm-contact-name">${c.name}</div>
+        <div class="dm-contact-preview">${c.msgs[c.msgs.length-1]?.text || ''}</div>
+      </div>
+      <div class="dm-time">${c.msgs[c.msgs.length-1]?.time || ''}</div>
+    </div>
+  `).join('');
+  renderMessages();
+}
+
+function selectContact(i) {
+  activeContact = i;
+  const c = contacts[i];
+  document.getElementById('dmChatHeader').innerHTML = `
+    <div class="dm-avatar" style="background:${c.color}">${c.initials}</div>
+    <div>
+      <div style="font-size:14px;font-weight:600">${c.name}</div>
+      <div style="font-size:12px;color:var(--text2);display:flex;align-items:center;gap:5px">
+        <div class="dm-online" style="background:${c.online?'var(--green)':'var(--text2)'}"></div> 
+        ${c.online ? 'Online' : 'Offline'}
+      </div>
+    </div>
+  `;
+  renderMessages();
+  renderDM();
+}
+
+function renderMessages() {
+  const msgs = contacts[activeContact].msgs;
+  document.getElementById('dmMessages').innerHTML = msgs.map(m => `
+    <div class="msg ${m.mine?'mine':'theirs'}">
+      <div class="msg-bubble">${m.text}</div>
+      <div class="msg-time">${m.time}</div>
+    </div>
+  `).join('');
+  const el = document.getElementById('dmMessages');
+  el.scrollTop = el.scrollHeight;
+}
+
+function sendDM() {
+  const input = document.getElementById('dmInput');
+  const text = input.value.trim();
+  if (!text) return;
+  contacts[activeContact].msgs.push({ mine: true, text, time: new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) });
+  input.value = '';
+  renderMessages();
+  // Simulate reply after delay
+  setTimeout(() => {
+    const replies = ["I'll check that for you!", "Good question, let me get back to you on that.", "Sure, noted! 👍", "Please check the resource library for more info.", "I've replied in the doubts section too."];
+    contacts[activeContact].msgs.push({ mine: false, text: replies[Math.floor(Math.random()*replies.length)], time: new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) });
+    renderMessages();
+  }, 1200);
+}
+
+function filterContacts(q) {
+  // simple visual filter
+}
+
+// ═══════════════════════════════════
+// RESOURCES
+// ═══════════════════════════════════
+function renderResources() {
+  document.getElementById('resourcesGrid').innerHTML = resources.map(r => `
+    <div class="resource-card" onclick="alert('📁 Opening: ' + '${r.name}')">
+      <div class="resource-icon">${r.icon}</div>
+      <div class="resource-name">${r.name}</div>
+      <div class="resource-meta">${r.type} · ${r.size}</div>
+      <div class="resource-tag"><span class="tag ${r.tag}">${r.subject}</span></div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════
+// SEARCH
+// ═══════════════════════════════════
+function handleSearch() {
+  const q = document.getElementById('globalSearch').value.toLowerCase().trim();
+  if (!q) return;
+  const found = doubts.filter(d => d.q.toLowerCase().includes(q));
+  if (found.length) {
+    goto('doubts', document.querySelector('[onclick*="doubts"]'));
+    const el = document.getElementById('doubtsList');
+    el.innerHTML = found.map(d => `
+      <div class="doubt-card">
+        <div class="doubt-question">${d.q}</div>
+        <div class="tags"><div class="tag tag-blue">${d.subject}</div></div>
+        <div class="doubt-meta"><div class="vote-btn">▲ ${d.votes}</div></div>
+      </div>
+    `).join('');
+  }
+}
+
+// ═══════════════════════════════════
+// MODALS
+// ═══════════════════════════════════
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+document.querySelectorAll('.modal-backdrop').forEach(b => {
+  b.addEventListener('click', e => { if (e.target === b) b.classList.remove('open'); });
+});
+
+// ═══════════════════════════════════
+// AI ASSISTANT (Claude API)
+// ═══════════════════════════════════
+function openAI() { document.getElementById('aiPanel').classList.add('open'); }
+function closeAI() { document.getElementById('aiPanel').classList.remove('open'); }
+
+async function sendAI() {
+  const input = document.getElementById('aiInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+
+  const messagesEl = document.getElementById('aiMessages');
+  messagesEl.innerHTML += `<div class="ai-msg user"><div class="ai-bubble">${text}</div></div>`;
+  const typingEl = document.createElement('div');
+  typingEl.className = 'ai-msg bot';
+  typingEl.innerHTML = `<div class="ai-bubble"><div class="ai-typing"><span></span><span></span><span></span></div></div>`;
+  messagesEl.appendChild(typingEl);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+
+  const contextSummary = `You are UniAI, the AI assistant for UniConnect — a Student-Teacher communication platform at NIET Greater Noida for B.Tech Sem II AI/ML students. The platform has: Doubts (with anonymous posting), Notice Board, Live Polls, Direct Messaging, and Resource Library. Current doubts: ${doubts.map(d=>d.q).join('; ')}. Current notices: ${notices.map(n=>n.title).join('; ')}. Be concise, academic, and helpful. Current user is ${isTeacher ? 'Dr. Sharma (faculty)' : 'Ashish Kumar (student)'}.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 400,
+        system: contextSummary,
+        messages: [{ role: 'user', content: text }]
+      })
+    });
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || 'Sorry, I couldn\'t get a response right now.';
+    typingEl.innerHTML = `<div class="ai-bubble">${reply.replace(/\n/g,'<br>')}</div>`;
+  } catch(e) {
+    typingEl.innerHTML = `<div class="ai-bubble">⚠️ Connection issue. Please try again in a moment.</div>`;
+  }
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+// ═══════════════════════════════════
+// INIT
+// ═══════════════════════════════════
+renderDoubts();
+renderNotices();
+renderPolls();
+renderDM();
+renderResources();
+</script>
+</body>
+</html>
