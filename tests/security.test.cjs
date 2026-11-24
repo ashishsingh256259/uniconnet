@@ -1,0 +1,13 @@
+const fs = require('node:fs');
+const vm = require('node:vm');
+const assert = require('node:assert/strict');
+const test = require('node:test');
+const html = fs.readFileSync('index.html', 'utf8');
+const match = html.match(/function escapeHTML\(value\) \{[\s\S]*?\n\}/);
+assert.ok(match, 'escaping helper exists');
+const escapeHTML = vm.runInNewContext(match[0] + '\n escapeHTML');
+test('escapes markup and quotes', () => assert.equal(escapeHTML('<img src=x onerror="alert(1)"> & \'x\''), '&lt;img src=x onerror=&quot;alert(1)&quot;&gt; &amp; &#39;x&#39;'));
+test('preserves normal text and Unicode', () => assert.equal(escapeHTML('Hello नमस्ते'), 'Hello नमस्ते'));
+test('handles missing values', () => assert.equal(escapeHTML(null), ''));
+test('all inline scripts parse', () => { for (const m of html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)) if (m[1].trim()) new vm.Script(m[1]); });
+test('critical render sites escape text', () => { for (const field of ['d.q','r.text','n.title','n.text','p.q','opt','m.text','text','reply']) assert.ok(html.includes('escapeHTML(' + field + ')'), field); });
