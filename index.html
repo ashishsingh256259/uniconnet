@@ -910,6 +910,12 @@
 <button class="ai-fab" onclick="openAI()" title="AI Assistant">🤖</button>
 
 <script>
+// Encode untrusted text before interpolating it into HTML templates.
+function escapeHTML(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[ch]);
+}
 // ═══════════════════════════════════
 // STATE
 // ═══════════════════════════════════
@@ -1009,12 +1015,12 @@ function renderDoubts(filter) {
   el.innerHTML = list.map(d => `
     <div class="doubt-card" id="doubt-${d.id}">
       <div class="doubt-top">
-        <div class="doubt-question">${d.q}</div>
+        <div class="doubt-question">${escapeHTML(d.q)}</div>
         <div class="doubt-status status-${d.status}">${d.status === 'answered' ? '✅ Answered' : d.status === 'pending' ? '⏳ Pending' : '💬 Open'}</div>
       </div>
       <div class="tags">
-        <div class="tag tag-blue">${d.subject}</div>
-        ${d.anon ? '<div class="tag tag-anon">🎭 Anonymous</div>' : `<div class="tag tag-purple">👤 ${d.author}</div>`}
+        <div class="tag tag-blue">${escapeHTML(d.subject)}</div>
+        ${d.anon ? '<div class="tag tag-anon">🎭 Anonymous</div>' : `<div class="tag tag-purple">👤 ${escapeHTML(d.author)}</div>`}
         ${d.mine ? '<div class="tag tag-green">✦ My Doubt</div>' : ''}
       </div>
       <div class="doubt-meta">
@@ -1029,10 +1035,10 @@ function renderDoubts(filter) {
         ${d.replies.map(r => `
           <div class="reply">
             <div class="reply-header">
-              <span class="reply-author">👨‍🏫 ${r.author}</span>
-              <span class="reply-time">${r.time}</span>
+              <span class="reply-author">👨‍🏫 ${escapeHTML(r.author)}</span>
+              <span class="reply-time">${escapeHTML(r.time)}</span>
             </div>
-            <div class="reply-text">${r.text}</div>
+            <div class="reply-text">${escapeHTML(r.text)}</div>
           </div>
         `).join('')}
         <div class="reply-input-row">
@@ -1106,13 +1112,13 @@ function renderNotices() {
   const sorted = [...notices].sort((a,b) => b.pinned - a.pinned);
   el.innerHTML = sorted.map(n => `
     <div class="notice-card ${n.pinned?'pinned':''}">
-      <div class="notice-icon-wrap" style="background:rgba(251,191,36,0.1)">${n.icon}</div>
+      <div class="notice-icon-wrap" style="background:rgba(251,191,36,0.1)">${escapeHTML(n.icon)}</div>
       <div class="notice-body">
-        <div class="notice-title">${n.title} ${n.pinned?'<span class="pin-badge">📌 PINNED</span>':''} <span class="tag tag-amber" style="font-size:10px">${n.category}</span></div>
-        <div class="notice-text">${n.text}</div>
+        <div class="notice-title">${escapeHTML(n.title)} ${n.pinned?'<span class="pin-badge">📌 PINNED</span>':''} <span class="tag tag-amber" style="font-size:10px">${escapeHTML(n.category)}</span></div>
+        <div class="notice-text">${escapeHTML(n.text)}</div>
         <div class="notice-footer">
-          <span>📣 ${n.author}</span>
-          <span>🕐 ${n.time}</span>
+          <span>📣 ${escapeHTML(n.author)}</span>
+          <span>🕐 ${escapeHTML(n.time)}</span>
           <button class="read-btn ${n.read?'done':''}" onclick="markRead(${n.id})">${n.read?'✓ Read':'Mark as Read'}</button>
         </div>
       </div>
@@ -1151,18 +1157,18 @@ function renderPolls() {
     return `
       <div class="poll-card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <div class="tag tag-blue">${p.subject}</div>
+          <div class="tag tag-blue">${escapeHTML(p.subject)}</div>
           <div class="tag ${p.active?'tag-green':'tag-amber'}">${p.active?'🟢 Live':'🔴 Closed'}</div>
         </div>
-        <div class="poll-question">${p.q}</div>
+        <div class="poll-question">${escapeHTML(p.q)}</div>
         ${p.options.map((opt,i) => {
           const pct = total ? Math.round(p.votes[i]/total*100) : 0;
           return `<div class="poll-option ${p.myVote===i?'selected':''}" onclick="${!voted&&p.active?`votePoll(${p.id},${i})`:''}" style="${!p.active||voted?'cursor:default':''}">
             <div class="poll-fill" style="width:${voted||!p.active?pct:0}%"></div>
-            <div class="poll-label"><span>${opt}</span>${voted||!p.active?`<span class="poll-pct">${pct}%</span>`:''}  </div>
+            <div class="poll-label"><span>${escapeHTML(opt)}</span>${voted||!p.active?`<span class="poll-pct">${pct}%</span>`:''}  </div>
           </div>`;
         }).join('')}
-        <div class="poll-meta">👤 ${p.author} · ${total} total votes${voted?' · You voted ✓':p.active?' · Tap to vote':''}</div>
+        <div class="poll-meta">👤 ${escapeHTML(p.author)} · ${total} total votes${voted?' · You voted ✓':p.active?' · Tap to vote':''}</div>
       </div>
     `;
   }).join('');
@@ -1195,12 +1201,12 @@ function renderDM() {
   const el = document.getElementById('dmContacts');
   el.innerHTML = contacts.map((c,i) => `
     <div class="dm-contact ${activeContact===i?'active':''}" onclick="selectContact(${i})">
-      <div class="dm-avatar" style="background:${c.color}">${c.initials}</div>
+      <div class="dm-avatar" style="background:${c.color}">${escapeHTML(c.initials)}</div>
       <div class="dm-contact-info">
-        <div class="dm-contact-name">${c.name}</div>
-        <div class="dm-contact-preview">${c.msgs[c.msgs.length-1]?.text || ''}</div>
+        <div class="dm-contact-name">${escapeHTML(c.name)}</div>
+        <div class="dm-contact-preview">${escapeHTML(c.msgs[c.msgs.length-1]?.text || '')}</div>
       </div>
-      <div class="dm-time">${c.msgs[c.msgs.length-1]?.time || ''}</div>
+      <div class="dm-time">${escapeHTML(c.msgs[c.msgs.length-1]?.time || '')}</div>
     </div>
   `).join('');
   renderMessages();
@@ -1210,9 +1216,9 @@ function selectContact(i) {
   activeContact = i;
   const c = contacts[i];
   document.getElementById('dmChatHeader').innerHTML = `
-    <div class="dm-avatar" style="background:${c.color}">${c.initials}</div>
+    <div class="dm-avatar" style="background:${c.color}">${escapeHTML(c.initials)}</div>
     <div>
-      <div style="font-size:14px;font-weight:600">${c.name}</div>
+      <div style="font-size:14px;font-weight:600">${escapeHTML(c.name)}</div>
       <div style="font-size:12px;color:var(--text2);display:flex;align-items:center;gap:5px">
         <div class="dm-online" style="background:${c.online?'var(--green)':'var(--text2)'}"></div> 
         ${c.online ? 'Online' : 'Offline'}
@@ -1227,8 +1233,8 @@ function renderMessages() {
   const msgs = contacts[activeContact].msgs;
   document.getElementById('dmMessages').innerHTML = msgs.map(m => `
     <div class="msg ${m.mine?'mine':'theirs'}">
-      <div class="msg-bubble">${m.text}</div>
-      <div class="msg-time">${m.time}</div>
+      <div class="msg-bubble">${escapeHTML(m.text)}</div>
+      <div class="msg-time">${escapeHTML(m.time)}</div>
     </div>
   `).join('');
   const el = document.getElementById('dmMessages');
@@ -1259,11 +1265,11 @@ function filterContacts(q) {
 // ═══════════════════════════════════
 function renderResources() {
   document.getElementById('resourcesGrid').innerHTML = resources.map(r => `
-    <div class="resource-card" onclick="alert('📁 Opening: ' + '${r.name}')">
-      <div class="resource-icon">${r.icon}</div>
-      <div class="resource-name">${r.name}</div>
-      <div class="resource-meta">${r.type} · ${r.size}</div>
-      <div class="resource-tag"><span class="tag ${r.tag}">${r.subject}</span></div>
+    <div class="resource-card" data-resource-name="${escapeHTML(r.name)}" onclick="alert('📁 Opening: ' + this.dataset.resourceName)">
+      <div class="resource-icon">${escapeHTML(r.icon)}</div>
+      <div class="resource-name">${escapeHTML(r.name)}</div>
+      <div class="resource-meta">${escapeHTML(r.type)} · ${escapeHTML(r.size)}</div>
+      <div class="resource-tag"><span class="tag ${r.tag}">${escapeHTML(r.subject)}</span></div>
     </div>
   `).join('');
 }
@@ -1280,8 +1286,8 @@ function handleSearch() {
     const el = document.getElementById('doubtsList');
     el.innerHTML = found.map(d => `
       <div class="doubt-card">
-        <div class="doubt-question">${d.q}</div>
-        <div class="tags"><div class="tag tag-blue">${d.subject}</div></div>
+        <div class="doubt-question">${escapeHTML(d.q)}</div>
+        <div class="tags"><div class="tag tag-blue">${escapeHTML(d.subject)}</div></div>
         <div class="doubt-meta"><div class="vote-btn">▲ ${d.votes}</div></div>
       </div>
     `).join('');
@@ -1311,7 +1317,7 @@ async function sendAI() {
   input.value = '';
 
   const messagesEl = document.getElementById('aiMessages');
-  messagesEl.innerHTML += `<div class="ai-msg user"><div class="ai-bubble">${text}</div></div>`;
+  messagesEl.innerHTML += `<div class="ai-msg user"><div class="ai-bubble">${escapeHTML(text)}</div></div>`;
   const typingEl = document.createElement('div');
   typingEl.className = 'ai-msg bot';
   typingEl.innerHTML = `<div class="ai-bubble"><div class="ai-typing"><span></span><span></span><span></span></div></div>`;
@@ -1333,7 +1339,7 @@ async function sendAI() {
     });
     const data = await res.json();
     const reply = data.content?.[0]?.text || 'Sorry, I couldn\'t get a response right now.';
-    typingEl.innerHTML = `<div class="ai-bubble">${reply.replace(/\n/g,'<br>')}</div>`;
+    typingEl.innerHTML = `<div class="ai-bubble">${escapeHTML(reply).replace(/\n/g,'<br>')}</div>`;
   } catch(e) {
     typingEl.innerHTML = `<div class="ai-bubble">⚠️ Connection issue. Please try again in a moment.</div>`;
   }
