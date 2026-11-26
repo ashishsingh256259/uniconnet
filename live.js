@@ -42,6 +42,8 @@ function resetSession() {
   generation++; session=null; profile=null; isTeacher=false;
   for(const a of [doubts,notices,polls,contacts,resources]) a.length=0;
   el('liveAuth').hidden=false; el('app').hidden=true;
+  for(const id of ['doubtsList','noticesList','pollsList','dmContacts','dmMessages','resourcesGrid','dmChatHeader','recentLive']) el(id).replaceChildren();
+  for(const id of ['dmInput','doubtQuestion','noticeTitle','noticeText','pollQuestion','pollOptions','globalSearch','aiInput','authPassword']) el(id).value='';
   document.querySelectorAll('.modal-backdrop').forEach(m=>m.classList.remove('open'));
   closeAI(); el('aiMessages').replaceChildren();
 }
@@ -83,15 +85,15 @@ const ids = new Map();let nextId=1;
 function localId(uuid){if(!ids.has(uuid))ids.set(uuid,nextId++);return ids.get(uuid);}
 async function loadAll(){
  const owner=profile.id, epoch=generation;
- const [people,questions,answers,news,ps,opts,votes,ups,totals,ms,rs]=await Promise.all([
+ const [people,questions,answers,news,ps,opts,votes,ups,totals,ms,rs,own]=await Promise.all([
  db('profiles?select=id,display_name,role'),db('doubts?select=id,public_author_id,anonymous,question,subject,status,created_at&order=created_at.desc'),
  db('replies?select=id,doubt_id,author_id,body,created_at&order=created_at.asc'),db('notices?select=*&order=created_at.desc'),
  db('polls?select=*&order=created_at.desc'),db('poll_options?select=*'),db('poll_votes?select=*'),db('doubt_votes?select=*'),
- db('rpc/vote_totals','POST',{}),db('messages?select=*&order=created_at.asc'),db('resources?select=*&order=created_at.desc')]);
+ db('rpc/vote_totals','POST',{}),db('messages?select=*&order=created_at.asc'),db('resources?select=*&order=created_at.desc'),db('rpc/my_doubt_ids','POST',{})]);
  if(epoch!==generation||profile?.id!==owner)return;
  const names=new Map(people.map(p=>[p.id,p.display_name]));const name=id=>names.get(id)||'Unknown user';
  const count=new Map(totals.map(t=>[t.kind+':'+t.item_id,Number(t.total)]));
- replaceRows(doubts,questions.map(q=>({id:localId(q.id),dbid:q.id,q:q.question,subject:q.subject,anon:q.anonymous,author:q.anonymous?'Anonymous':name(q.public_author_id),mine:q.public_author_id===owner,status:q.status,votes:count.get('doubt:'+q.id)||0,voted:ups.some(v=>v.doubt_id===q.id),replies:answers.filter(a=>a.doubt_id===q.id).map(a=>({author:name(a.author_id),text:a.body,time:timeLabel(a.created_at)}))})));
+ replaceRows(doubts,questions.map(q=>({id:localId(q.id),dbid:q.id,q:q.question,subject:q.subject,anon:q.anonymous,author:q.anonymous?'Anonymous':name(q.public_author_id),mine:own.includes(q.id),status:q.status,votes:count.get('doubt:'+q.id)||0,voted:ups.some(v=>v.doubt_id===q.id),replies:answers.filter(a=>a.doubt_id===q.id).map(a=>({author:name(a.author_id),text:a.body,time:timeLabel(a.created_at)}))})));
  replaceRows(notices,news.map(n=>({id:localId(n.id),title:n.title,text:n.body,pinned:n.pinned,author:name(n.author_id),time:timeLabel(n.created_at),category:'General',icon:'📢'})));
  replaceRows(polls,ps.map(p=>{const options=opts.filter(o=>o.poll_id===p.id);const selected=votes.find(v=>v.poll_id===p.id);const idx=options.findIndex(o=>o.id===selected?.option_id);return{id:localId(p.id),dbid:p.id,q:p.question,author:name(p.author_id),subject:'General',active:p.active,options:options.map(o=>o.label),optionIds:options.map(o=>o.id),votes:options.map(o=>count.get('poll:'+o.id)||0),myVote:idx<0?null:idx,owner:p.author_id===owner};}));
  const active=contacts[activeContact]?.dbid;
@@ -127,3 +129,6 @@ el('signUpBtn').addEventListener('click',()=>authenticate(true));
 el('refreshBtn').addEventListener('click',()=>run(loadAll));
 el('addResourceBtn').addEventListener('click',()=>run(async()=>{if(!isTeacher)throw new Error('Faculty only');const title=prompt('Resource title'),url=prompt('HTTPS resource URL'),subject=prompt('Subject');if(!title||!url||!subject)return;if(new URL(url).protocol!=='https:')throw new Error('HTTPS links only');await writeAndReload('resources','POST',{author_id:profile.id,title,url,subject});}));
 resetSession();
+
+// Near-real-time polling; never overwrite an open form or an in-progress mutation.
+setInterval(async()=>{if(!profile||busy||currentPage!=='dm'||document.hidden)return;busy=true;try{await loadAll();}catch(e){notify(e.message);}finally{busy=false;}},15000);
